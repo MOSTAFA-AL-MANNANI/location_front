@@ -31,7 +31,7 @@ const MessagesUnread = () => {
   const markAsRead = async (id) => {
     try {
       await axios.post(`http://localhost:8000/api/modifiermessage/${id}`);
-      setMessages(messages.filter(m => m.id !== id)); // إزالة من القائمة لأنه أصبح مقروء
+      setMessages(messages.filter(m => m.id !== id)); 
     } catch {
       alert('Erreur lors de la mise à jour.');
     }
@@ -90,6 +90,7 @@ const MessagesUnread = () => {
           ))}
         </tbody>
       </table>
+
       {messages.length === 0 && <p className="mt-4 text-gray-600">Aucun message non lu.</p>}
     </div>
   );

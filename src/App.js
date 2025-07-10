@@ -1,51 +1,50 @@
-import logo from './logo.svg';
-import './App.css';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Sidbar from './admin/sidbar';
-import Home from './admin/home';
-import Ajoutercars from './admin/ajoutercars';
-import CarsList from './admin/CarsList';
-import EditCar from './admin/EditCar';
-import BookingList from './admin/BookingList';
-import BookingDetails from './admin/BookingsDetails';
-import BookingEdit from './admin/BookingEdit';
-import Messagesread from './admin/MessagesRead';
-import MessagesUnread from './admin/MessagesUnread';
-import MessageDetails from './admin/MessageDetails';
-import MessageEdit from './admin/MessageEdit';
-import HomeC from './client/home';
-import Propos from './client/propos';
-import Contact from './client/contact';
-import Categories from './admin/Categories';
+import React, { useEffect, useState } from "react";
+import Client from "./client/Client";
+import Admin from "./admin/admin";
 
-function App() {
-  return (
-    <Router>
-       <div className="flex">
-         <Sidbar />
-        
-         <div className="flex-1 p-8">
-      <Routes>
-             <Route path="/home" element={<Home/>} />
-             <Route path="/ajoutercars" element={<Ajoutercars />} />
-             <Route path="/carslist" element={<CarsList />} />
-             <Route path="/cars/edit/:id" element={<EditCar/>} />
-             <Route path="/bookingList" element={<BookingList/>} />
-             <Route path="bookings/view/:id" element={<BookingDetails/>} />
-             <Route path="/bookings/edit/:id" element={<BookingEdit/>} />
-             <Route path="message/read/" element={<Messagesread/>} />
-             <Route path="message/unread/" element={<MessagesUnread/>} />
-             <Route path="messages/:id" element={<MessageDetails/>} />
-             <Route path="message/edit/:id" element={<MessageEdit/>} />
-             <Route path="/categories" element={<Categories/>} />
-         </Routes>
-        </div>
-      </div>
-     </Router>/*
-    <div>
-      <Contact/>
-    </div>*/
-  );
+export default function App() {
+  const [userRole, setUserRole] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setUserRole(null);
+      setLoading(false);
+      return;
+    }
+
+    fetch("http://127.0.0.1:8000/api/user", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Unauthorized");
+        return res.json();
+      })
+      .then(data => {
+        setUserRole(data.role); // نفترض أن API يعيد { role: "admin" | "client" }
+        setLoading(false);
+      })
+      .catch(() => {
+        setUserRole(null);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (userRole === "client") {
+    return <Client />;
+  }
+
+  if (userRole === "admin") {
+    return <Admin />;
+  }
+
+  // في حالة لم يتم التعرّف على الدور أو غير موجود
+  return <Client />;
 }
-
-export default App;

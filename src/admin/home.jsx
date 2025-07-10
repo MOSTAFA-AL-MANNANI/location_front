@@ -1,51 +1,68 @@
-import React from "react";
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-export default function Home(){
-    const [stats, setStats] = useState(null);
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
+export default function Home() {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await axios.get('http://localhost:8000/api/home')
-        setStats(response.data);
-      } catch (error) {
-        console.error('Erreur lors du chargement des statistiques :', error);
+    axios.get("http://127.0.0.1:8000/api/home", {
+      headers: {
+        Authorization: `Bearer ${token}`
       }
-    };
-
-    fetchStats();
+    })
+    .then((res) => {
+      setStats(res.data);
+    })
+    .catch((err) => {
+      console.error("Erreur chargement :", err);
+    })
+    .finally(() => setLoading(false));
   }, []);
 
- if (!stats) return <p>Chargement...</p>;
+  if (loading) return <p className="text-center p-4">Chargement...</p>;
+  if (!stats) return <p className="text-center text-red-500">Erreur de chargement</p>;
 
-  return <div>
-            <div class="px-40 flex flex-1 justify-center py-5">
-          <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
-            <div class="flex flex-wrap justify-between gap-3 p-4"><p class="text-white tracking-light text-[32px] font-bold leading-tight min-w-72">Dashboard</p></div>
-            <div class="flex flex-wrap gap-4 p-4">
-              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 bg-[#223549]">
-                <p class="text-white text-base font-medium leading-normal">Cars</p>
-                <p class="text-white tracking-light text-2xl font-bold leading-tight">{stats.cars.count}</p>
-                <p class="text-[#0bda5b] text-base font-medium leading-normal">{stats.cars.growth}%</p>
-              </div>
-              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 bg-[#223549]">
-                <p class="text-white text-base font-medium leading-normal">Reservations</p>
-                <p class="text-white tracking-light text-2xl font-bold leading-tight">{stats.reservations.count}</p>
-                <p class="text-[#0bda5b] text-base font-medium leading-normal">{stats.reservations.growth}%</p>
-              </div>
-              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 bg-[#223549]">
-                <p class="text-white text-base font-medium leading-normal">Revenue</p>
-                <p class="text-white tracking-light text-2xl font-bold leading-tight">{stats.revenue.count}Dhs</p>
-                <p class="text-[#0bda5b] text-base font-medium leading-normal">{stats.revenue.growth}%</p>
-              </div>
-              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 bg-[#223549]">
-                <p class="text-white text-base font-medium leading-normal">Clients</p>
-                <p class="text-white tracking-light text-2xl font-bold leading-tight">{stats.clients.count}</p>
-                <p class="text-[#0bda5b] text-base font-medium leading-normal">{stats.clients.growth}%</p>
-              </div>
-            </div>
-          </div>
-        </div>
-  </div>
+  return (
+    <div className="p-8 bg-gray-100 min-h-screen">
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">Dashboard Administrateur</h1>
+
+      {/* Statistiques principales */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatCard title="Voitures" value={stats.cars.count} growth={stats.cars.growth} />
+        <StatCard title="Réservations" value={stats.reservations.count} growth={stats.reservations.growth} />
+        <StatCard title="Revenus (Dhs)" value={stats.revenue.total} growth={stats.revenue.growth} />
+        <StatCard title="Clients" value={stats.clients.count} growth={stats.clients.growth} />
+      </div>
+
+      {/* Autres données */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <InfoCard title="Messages" value={stats.messages} />
+        <InfoCard title="Utilisateurs" value={stats.users} />
+        <InfoCard title="Catégories" value={stats.categories} />
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ title, value, growth }) {
+  return (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-gray-500 text-sm font-semibold">{title}</h2>
+      <p className="text-2xl font-bold text-gray-800">{value}</p>
+      <p className={`text-sm font-medium ${growth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+        {growth}% par rapport au mois précédent
+      </p>
+    </div>
+  );
+}
+
+function InfoCard({ title, value }) {
+  return (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-gray-600 text-md">{title}</h2>
+      <p className="text-2xl font-bold text-gray-800">{value}</p>
+    </div>
+  );
 }

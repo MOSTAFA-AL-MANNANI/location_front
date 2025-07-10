@@ -1,6 +1,7 @@
 import axios from 'axios';
-import { useState } from 'react';
+import { useEffect,useState } from 'react';
 import { FaCar, FaClock, FaStar, FaMoneyBillWave, FaFacebook, FaTwitter, FaInstagram, FaMapMarkerAlt, FaPhone, FaEnvelope } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -10,30 +11,34 @@ const Contact = () => {
     message: '',
     read: 0
   });
-console.log(formData)
-const handleChange = (e) => {
-  const { name, value } = e.target;
-  setFormData(prev => ({
-    ...prev,
-    [name]: value
-  }));
-};
+
+  const [cars, setCars] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const carsPerPage = 3;
+
+  const startIndex = currentPage * carsPerPage;
+  const visibleCars = cars.slice(startIndex, startIndex + carsPerPage);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post("http://localhost:8000/api/ajoutermessage",formData).then((res)=>{
-   
-   if(res.status==201)
-   {
-    alert("bien ajouter")
+    axios.post("http://localhost:8000/api/ajoutermessage", formData).then((res) => {
+      if (res.status === 201) {
+        alert("Message bien ajouté");
+      } else {
+        alert("Erreur du BackEnd");
+      }
+    }).catch(() => {
+      alert("Erreur lors de la requête");
+    });
 
-   }
-   else
-   {
-    alert("Erreur du BackEnd")
-   }
-   })
-    // Ici vous pourriez ajouter une requête API pour envoyer le formulaire
     setFormData({
       name: '',
       email: '',
@@ -41,117 +46,204 @@ const handleChange = (e) => {
       message: '',
       read: 0
     });
-    
   };
 
-  const popularCars = [
-    {
-      id: 1,
-      name: 'Mercedes-Benz Classe S',
-      price: '200€/jour',
-      image: 'https://images.unsplash.com/photo-1616788494707-ec28f08d05a1?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'
-    },
-    {
-      id: 2,
-      name: 'BMW Série 7',
-      price: '180€/jour',
-      image: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'
-    },
-    {
-      id: 3,
-      name: 'Audi A8',
-      price: '190€/jour',
-      image: 'https://images.unsplash.com/photo-1580274455191-1c55838e998f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'
-    }
-  ];
+  useEffect(() => {
+    const fetchCars = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/listecar');
+        setCars(response.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
+    fetchCars();
+  }, []);
+
+  const handlePrev = () => {
+    if (currentPage > 0) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNext = () => {
+    if (currentPage < Math.ceil(cars.length / carsPerPage) - 1) setCurrentPage(currentPage + 1);
+  };
   const teamMembers = [
-    {
-      id: 1,
-      name: 'Jean Dupont',
-      role: 'Fondateur & CEO',
-      image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'
-    },
-    {
-      id: 2,
-      name: 'Marie Lambert',
-      role: 'Responsable clientèle',
-      image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'
-    }
-  ];
+  {
+    id: 1,
+    name: 'Ali Bennani',
+    role: 'Directeur général',
+    image: 'https://randomuser.me/api/portraits/men/32.jpg'
+  },
+  {
+    id: 2,
+    name: 'Sanae Elhaj',
+    role: 'Responsable clientèle',
+    image: 'https://randomuser.me/api/portraits/women/44.jpg'
+  }
+];
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Navigation */}
-      <nav className="bg-white shadow-lg">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-between">
-            <div className="flex space-x-7">
-              {/* Logo */}
-              <div>
-                <a href="#" className="flex items-center py-4 px-2">
-                  <FaCar className="h-8 w-8 text-blue-500" />
-                  <span className="font-semibold text-gray-500 text-lg ml-2">LuxeDrive</span>
-                </a>
-              </div>
-              {/* Liens de navigation */}
-              <div className="hidden md:flex items-center space-x-1">
-                <a href="#" className="py-4 px-2 text-blue-500 border-b-4 border-blue-500 font-semibold">Accueil</a>
-                <a href="#" className="py-4 px-2 text-gray-500 font-semibold hover:text-blue-500 transition duration-300">Voitures</a>
-                <a href="#about" className="py-4 px-2 text-gray-500 font-semibold hover:text-blue-500 transition duration-300">À propos</a>
-                <a href="#contact" className="py-4 px-2 text-gray-500 font-semibold hover:text-blue-500 transition duration-300">Contact</a>
-              </div>
-            </div>
-            {/* Bouton Connexion */}
-            <div className="hidden md:flex items-center space-x-3">
-              <a href="#" className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-blue-500 hover:text-white transition duration-300">Connexion</a>
-            </div>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen flex flex-col pt-20">
+
 
       {/* Section Hero */}
       <section className="relative bg-gray-900 text-white">
         <div className="absolute inset-0 bg-black opacity-50"></div>
         <div 
           className="bg-cover bg-center h-96"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1494972308805-463bc619d34e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')" }}
+          style={{ backgroundImage: "url(https://coolwallpapers.me/picsup/5747443-dacia-wallpapers.jpg" }}
         ></div>
         <div className="relative container mx-auto px-6 py-32">
           <div className="max-w-2xl">
             <h1 className="text-4xl font-bold mb-4">Location de voitures de luxe</h1>
             <p className="text-xl mb-8">Découvrez notre sélection exclusive de véhicules haut de gamme pour toutes vos occasions spéciales.</p>
-            <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
-              Réserver maintenant
-            </button>
+                        <a href="/allcars"  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+                          Réserver maintenant
+                        </a>
+
           </div>
         </div>
       </section>
 
       {/* Section Voitures populaires */}
-      <section className="py-16 bg-gray-100">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-12">Nos voitures populaires</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {popularCars.map((car) => (
-              <div key={car.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition duration-300">
-                <img 
-                  src={car.image} 
-                  alt={car.name} 
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold mb-2">{car.name}</h3>
-                  <p className="text-gray-600 mb-4">{car.price}</p>
-                  <button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded transition duration-300">
-                    Voir détails
-                  </button>
+<section className="py-20 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
+  {/* Formes décoratives en arrière-plan */}
+  <div className="absolute top-0 left-0 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
+  <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
+  <div className="absolute bottom-0 left-1/2 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-4000"></div>
+
+  <div className="container mx-auto px-6 relative z-10">
+    {/* En-tête avec animation */}
+    <div className="text-center mb-16">
+      <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+        Nos Voitures Populaires
+      </h2>
+      <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
+      <p className="text-gray-600 mt-6 text-lg max-w-2xl mx-auto">
+        Découvrez notre sélection de véhicules les plus demandés, alliant confort, performance et style
+      </p>
+    </div>
+
+    <div className="relative">
+      {/* Bouton gauche amélioré */}
+      <button
+        onClick={handlePrev}
+        className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 bg-white/90 backdrop-blur-sm p-4 rounded-full shadow-xl hover:shadow-2xl hover:bg-white transition-all duration-300 z-20 group border border-gray-200"
+      >
+        <svg className="w-6 h-6 text-gray-600 group-hover:text-blue-600 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      {/* Grille des voitures */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-8">
+        {visibleCars.map((car, index) => (
+          <div 
+            key={car.id_car} 
+            className="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-white/20 hover:border-blue-200 hover:-translate-y-2"
+            style={{
+              animationDelay: `${index * 150}ms`
+            }}
+          >
+            {/* Image avec overlay */}
+            <div className="relative overflow-hidden">
+              <img
+                src={`http://127.0.0.1:8000/storage/${car.image}`}
+                alt={car.name}
+                className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
+              {/* Badge populaire */}
+              <div className="absolute top-4 left-4 bg-gradient-to-r from-orange-400 to-red-400 text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
+                Populaire
+              </div>
+            </div>
+
+            {/* Contenu de la carte */}
+            <div className="p-6">
+              <h3 className="text-xl font-bold mb-3 text-gray-800 group-hover:text-blue-600 transition-colors duration-300">
+                {car.name}
+              </h3>
+              
+              {/* Prix avec design amélioré */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-2">
+                  <span className="text-3xl font-bold text-blue-600">{car.prix}</span>
+                  <div className="text-gray-500">
+                    <span className="text-sm">DH</span>
+                    <span className="text-sm block">/ jour</span>
+                  </div>
+                </div>
+                <div className="flex text-yellow-400">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
                 </div>
               </div>
-            ))}
+
+              {/* Caractéristiques */}
+              <div className="flex justify-between text-sm text-gray-500 mb-4">
+                <div className="flex items-center">
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  4 places
+                </div>
+                <div className="flex items-center">
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Automatique
+                </div>
+              </div>
+
+              {/* Bouton avec animation */}
+              <Link to={`/car/${car.id_car}`}>
+                <button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg group">
+                  <span className="flex items-center justify-center">
+                    Voir Détails
+                    <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </span>
+                </button>
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        ))}
+      </div>
+
+      {/* Bouton droit amélioré */}
+      <button
+        onClick={handleNext}
+        className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 bg-white/90 backdrop-blur-sm p-4 rounded-full shadow-xl hover:shadow-2xl hover:bg-white transition-all duration-300 z-20 group border border-gray-200"
+      >
+        <svg className="w-6 h-6 text-gray-600 group-hover:text-blue-600 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+
+    {/* Indicateurs de pagination */}
+    <div className="flex justify-center mt-12 space-x-2">
+      {[...Array(Math.ceil(cars.length / 3))].map((_, index) => (
+        <button
+          key={index}
+          className={`w-3 h-3 rounded-full transition-all duration-300 ${
+            index === currentPage 
+              ? 'bg-blue-500 w-8' 
+              : 'bg-gray-300 hover:bg-gray-400'
+          }`}
+          onClick={() => setCurrentPage(index)}
+        />
+      ))}
+    </div>
+  </div>
+</section>
 
       {/* Section À propos */}
       <section id="about" className="py-16 bg-white">
